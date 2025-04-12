@@ -1,0 +1,43 @@
+cargo-features = ["codegen-backend"]
+
+[workspace]
+members = ["crates/epicentre_diagnostics", "crates/neurotransmitter"]
+resolver = "2"
+package.edition = "2024"
+
+[profile.dev]
+codegen-backend = "cranelift"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+correctness = "warn"
+suspicious = "warn"
+style = "warn"
+pedantic = "warn"
+nursery = "warn"
+complexity = "warn"
+perf = "warn"
+enum_glob_use = { level = "warn", priority = 1 }
+single_match_else = { level = "allow", priority = 1 }
+match_bool = { level = "allow", priority = 1 }
+
+[workspace.dependencies]
+color-eyre = "0.6.3"
+epicentre_diagnostics = { version = "0.1.0", path = "../epicentre_diagnostics" }
+iroh = "0.34.1"
+iroh-base = "0.34.1"
+iroh-blobs = { version = "0.34.1", features = ["rpc"] }
+tracing = "0.1.41"
+tracing-error = "0.2.1"
+tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter"] }
+
+[workspace.dependencies.tokio]
+version = "1.44.2"
+default-features = false
+features = ["rt-multi-thread", "macros"]
+
+# INFO: https://docs.rs/color-eyre/latest/color_eyre/#improving-perf-on-debug-builds
+[profile.dev.package.backtrace]
+opt-level = 3

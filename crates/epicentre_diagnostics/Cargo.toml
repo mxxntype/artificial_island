@@ -1,0 +1,13 @@
+[package]
+name = "epicentre_diagnostics"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+color-eyre.workspace = true
+tracing.workspace = true
+tracing-error.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt", "env-filter"] }
+
+[lints]
+workspace = true
