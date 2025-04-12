@@ -2296,6 +2296,7 @@ dependencies = [
 name = "neurotransmitter"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "epicentre_diagnostics",
  "iroh",
  "iroh-base",
