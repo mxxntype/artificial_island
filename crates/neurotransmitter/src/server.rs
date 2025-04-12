@@ -20,10 +20,10 @@ async fn main() -> Result<(), Report> {
         .await
         .map_err(|error| eyre!("{error}"))?;
 
-    tracing::info!("Router accept loop is ready, send Ctrl+C to shutdown");
+    tracing::info!("Router accept loop is ready, send SIGINT to shutdown");
 
     tokio::signal::ctrl_c().await?;
-    tracing::warn!("Caught Ctrl+C signal, shutting down");
+    tracing::warn!("Caught SIGINT signal, shutting down");
     router.shutdown().await.map_err(|error| eyre!("{error}"))?;
 
     Ok(())
