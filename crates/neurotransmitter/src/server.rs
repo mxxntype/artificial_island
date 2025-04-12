@@ -24,7 +24,6 @@ async fn main() -> Result<(), Report> {
 
     tokio::signal::ctrl_c().await?;
     tracing::warn!("Caught Ctrl+C signal, shutting down");
-
     router.shutdown().await.map_err(|error| eyre!("{error}"))?;
 
     Ok(())
