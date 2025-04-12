@@ -7,6 +7,10 @@ edition.workspace = true
 name = "neurotransmitter_server"
 path = "src/server.rs"
 
+[[bin]]
+name = "neurotransmitter_client"
+path = "src/client.rs"
+
 [dependencies]
 anyhow.workspace = true
 epicentre_diagnostics = { version = "0.1.0", path = "../epicentre_diagnostics" }

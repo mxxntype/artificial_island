@@ -1,6 +1,7 @@
 use clap::Parser;
 use clap::builder::Styles;
 use clap::builder::styling::AnsiColor::{BrightMagenta, Green, White};
+use iroh_blobs::ticket::BlobTicket;
 use std::path::PathBuf;
 
 const STYLES: Styles = Styles::styled()
@@ -11,7 +12,14 @@ const STYLES: Styles = Styles::styled()
 
 #[derive(Parser, Debug)]
 #[command(version, author, about, styles(STYLES))]
-pub struct Options {
+pub struct ServerOptions {
     /// Path to the file that will be served by the server.
     pub file: PathBuf,
+}
+
+#[derive(Parser, Debug)]
+#[command(version, author, about, styles(STYLES))]
+pub struct ClientOptions {
+    /// Path to the file that will be served by the server.
+    pub blob_ticket: BlobTicket,
 }

@@ -1,15 +1,13 @@
 use clap::Parser;
-use cli::Options;
 use epicentre_diagnostics::color_eyre::eyre::{Context, eyre};
 use epicentre_diagnostics::{DiagnosticLayer, Report, tracing};
 use iroh::protocol::Router;
-use iroh::{Endpoint, NodeAddr};
+use iroh::{Endpoint, NodeAddr, RelayMode};
 use iroh_blobs::net_protocol::Blobs;
 use iroh_blobs::rpc::client::blobs::WrapOption;
 use iroh_blobs::ticket::BlobTicket;
 use iroh_blobs::util::SetTagOption;
-
-pub mod cli;
+use neurotransmitter::cli::ServerOptions;
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -17,12 +15,13 @@ async fn main() -> Result<(), Report> {
         .setup()
         .wrap_err("Failed to setup the diagnostic layer")?;
 
-    let options = Options::parse();
+    let options = ServerOptions::parse();
     let file_path = std::path::absolute(options.file)?;
     tracing::info!(?file_path);
 
     let endpoint = Endpoint::builder()
         .discovery_n0()
+        .relay_mode(RelayMode::Default)
         .bind()
         .await
         .map_err(|error| eyre!("{error}"))
@@ -50,7 +49,9 @@ async fn main() -> Result<(), Report> {
         .wrap_err("Failed to finish the Iroh stream")?;
 
     let node_id = router.endpoint().node_id();
-    let ticket = BlobTicket::new(NodeAddr::from(node_id), blob.hash, blob.format)
+    let node_addr = NodeAddr::from(node_id);
+    tracing::info!(?node_addr, home_relay = ?router.endpoint().home_relay());
+    let ticket = BlobTicket::new(node_addr, blob.hash, blob.format)
         .map_err(|error| eyre!("{error}"))
         .wrap_err("Failed to create Iroh blob ticket")?;
 
