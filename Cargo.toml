@@ -30,6 +30,8 @@ color-eyre = "0.6.3"
 iroh = "0.34.1"
 iroh-base = "0.34.1"
 iroh-blobs = { version = "0.34.1", features = ["rpc"] }
+iroh-docs = { version = "0.34.0", features = ["rpc"] }
+iroh-gossip = "0.34.1"
 rand = "0.8.5"
 tracing = "0.1.41"
 tracing-error = "0.2.1"

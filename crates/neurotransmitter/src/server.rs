@@ -4,9 +4,8 @@ use epicentre_diagnostics::{DiagnosticLayer, Report, tracing};
 use iroh::protocol::Router;
 use iroh::{Endpoint, NodeAddr, RelayMode, SecretKey};
 use iroh_blobs::net_protocol::Blobs;
-use iroh_blobs::rpc::client::blobs::WrapOption;
-use iroh_blobs::ticket::BlobTicket;
-use iroh_blobs::util::SetTagOption;
+use iroh_docs::protocol::Docs;
+use iroh_gossip::net::Gossip;
 use neurotransmitter::cli::ServerOptions;
 use std::fs;
 use std::path::PathBuf;
@@ -51,37 +50,32 @@ async fn main() -> Result<(), Report> {
         .await
         .map_err(|error| eyre!("{error}"))
         .wrap_err("Failed to create an Iroh endpoint")?;
+
     let blobs = Blobs::memory().build(&endpoint);
+    let gossip = Gossip::builder()
+        .spawn(endpoint.clone())
+        .await
+        .map_err(|error| eyre!("{error}"))?;
+    let docs = Docs::memory()
+        .spawn(&blobs, &gossip)
+        .await
+        .map_err(|error| eyre!("{error}"))?;
+
     let router = Router::builder(endpoint)
-        .accept(iroh_blobs::ALPN, blobs.clone())
+        .accept(iroh_blobs::ALPN, blobs)
+        .accept(iroh_gossip::ALPN, gossip)
+        .accept(iroh_docs::ALPN, docs.clone())
         .spawn()
         .await
         .inspect(|_| tracing::debug!("Router accept loop is ready, send SIGINT to shutdown"))
         .map_err(|error| eyre!("{error}"))
         .wrap_err("Failed to spawn Iroh router")?;
 
-    let blobs_client = blobs.client();
-    let in_place = true;
-    let blob = blobs_client
-        .add_from_path(file_path, in_place, SetTagOption::Auto, WrapOption::NoWrap)
-        .await
-        .map_err(|error| eyre!("{error}"))
-        .wrap_err("Failed to add blob from path")?
-        .finish()
-        .await
-        .inspect(|add_outcome| tracing::debug!(?add_outcome, "Blob added"))
-        .map_err(|error| eyre!("{error}"))
-        .wrap_err("Failed to finish the Iroh stream")?;
+    // let docs_client = docs.client();
 
     let node_id = router.endpoint().node_id();
     let node_addr = NodeAddr::from(node_id);
     tracing::debug!(?node_addr, home_relay = ?router.endpoint().home_relay());
-    let ticket = BlobTicket::new(node_addr, blob.hash, blob.format)
-        .map_err(|error| eyre!("{error}"))
-        .wrap_err("Failed to create Iroh blob ticket")?;
-
-    tracing::info!(%ticket, "File hashed, blob ticket is ready");
-    tracing::info!("You can now try reaching this endpoint and grab the file using this ticket");
 
     tokio::signal::ctrl_c().await?;
     tracing::warn!("Caught SIGINT signal, shutting down");
