@@ -25,11 +25,12 @@ match_bool = { level = "allow", priority = 1 }
 
 [workspace.dependencies]
 anyhow = "1.0.97"
+clap = { version = "4.5.36", features = ["derive"] }
 color-eyre = "0.6.3"
-epicentre_diagnostics = { version = "0.1.0", path = "../epicentre_diagnostics" }
 iroh = "0.34.1"
 iroh-base = "0.34.1"
 iroh-blobs = { version = "0.34.1", features = ["rpc"] }
+rand = "0.8.5"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter"] }
@@ -38,7 +39,3 @@ tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter"] }
 version = "1.44.2"
 default-features = false
 features = ["rt-multi-thread", "macros"]
-
-# INFO: https://docs.rs/color-eyre/latest/color_eyre/#improving-perf-on-debug-builds
-[profile.dev.package.backtrace]
-opt-level = 3

@@ -2404,6 +2404,7 @@ dependencies = [
  "iroh",
  "iroh-base",
  "iroh-blobs",
+ "rand 0.8.5",
  "tokio",
 ]
 
