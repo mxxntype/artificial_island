@@ -33,6 +33,7 @@ iroh-blobs = { version = "0.34.1", features = ["rpc"] }
 iroh-docs = { version = "0.34.0", features = ["rpc"] }
 iroh-gossip = "0.34.1"
 rand = "0.8.5"
+thiserror = "2.0"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter"] }

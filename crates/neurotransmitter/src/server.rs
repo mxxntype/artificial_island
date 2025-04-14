@@ -2,16 +2,12 @@ use clap::Parser;
 use epicentre_diagnostics::color_eyre::eyre::{Context, eyre};
 use epicentre_diagnostics::{DiagnosticLayer, Report, tracing};
 use iroh::protocol::Router;
-use iroh::{Endpoint, NodeAddr, RelayMode, SecretKey};
+use iroh::{Endpoint, NodeAddr, RelayMode};
 use iroh_blobs::net_protocol::Blobs;
 use iroh_docs::protocol::Docs;
 use iroh_gossip::net::Gossip;
+use neurotransmitter::Identity;
 use neurotransmitter::cli::ServerOptions;
-use std::fs;
-use std::path::PathBuf;
-
-pub const PRIVATE_KEY_HOME_LOCATION: &str = ".cache/neurotransmitter/";
-pub const PRIVATE_KEY_FILENAME: &str = "server_key.bin";
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -23,25 +19,7 @@ async fn main() -> Result<(), Report> {
     let file_path = options.file.canonicalize()?;
     tracing::info!(?file_path);
 
-    let identity_path = std::env::var("HOME").map(PathBuf::from).map(|mut path| {
-        path.push(PRIVATE_KEY_HOME_LOCATION);
-        let _ = fs::create_dir_all(&path);
-        path.push(PRIVATE_KEY_FILENAME);
-        tracing::warn!(private_key_path = ?path);
-        path
-    })?;
-
-    let secret_key = if identity_path.exists() {
-        let key_bytes: [u8; 32] = fs::read(&identity_path)?
-            .try_into()
-            .map_err(|_| eyre!("Identity file must contain exactly 32 bytes"))?;
-        SecretKey::from_bytes(&key_bytes)
-    } else {
-        let key = SecretKey::generate(rand::rngs::OsRng);
-        fs::write(&identity_path, key.to_bytes())?;
-        key
-    };
-
+    let secret_key = Identity.from_cache_or_generate_new()?;
     let endpoint = Endpoint::builder()
         .secret_key(secret_key)
         .discovery_n0()
