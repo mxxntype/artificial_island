@@ -1,13 +1,13 @@
 cargo-features = ["codegen-backend"]
 
 [workspace]
+resolver = "2"
+package.edition = "2024"
 members = [
     "crates/epicentre_diagnostics",
     "crates/neurotransmitter",
     "crates/rb5009_listener",
 ]
-resolver = "2"
-package.edition = "2024"
 
 [profile.dev]
 codegen-backend = "cranelift"
