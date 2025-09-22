@@ -14,7 +14,7 @@ path = "src/client.rs"
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
-epicentre_diagnostics = { version = "0.1.0", path = "../epicentre_diagnostics" }
+epicentre_diagnostics.workspace = true
 iroh-base.workspace = true
 iroh-blobs.workspace = true
 iroh-docs.workspace = true

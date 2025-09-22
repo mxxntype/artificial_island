@@ -42,6 +42,7 @@ thiserror = "2.0"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter"] }
+epicentre_diagnostics = { version = "0.1.0", path = "crates/epicentre_diagnostics" }
 
 [workspace.dependencies.tokio]
 version = "1.44.2"
