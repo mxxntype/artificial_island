@@ -1,8 +1,9 @@
+use std::path::PathBuf;
+
 use clap::Parser;
 use clap::builder::Styles;
 use clap::builder::styling::AnsiColor::{BrightMagenta, Green, White};
 use iroh_blobs::ticket::BlobTicket;
-use std::path::PathBuf;
 
 const STYLES: Styles = Styles::styled()
     .usage(Green.on_default().bold())

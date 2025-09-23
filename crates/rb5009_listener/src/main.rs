@@ -1,8 +1,9 @@
+use std::net::Ipv4Addr;
+
 use axum::Router;
 use axum::routing::get;
 use epicentre_diagnostics::color_eyre::eyre::Report;
 use epicentre_diagnostics::{DiagnosticLayer, tracing};
-use std::net::Ipv4Addr;
 use tokio::net::TcpListener;
 
 #[tokio::main]

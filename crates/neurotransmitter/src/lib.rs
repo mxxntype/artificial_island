@@ -1,6 +1,7 @@
+use std::{env, fs, io, path};
+
 use epicentre_diagnostics::tracing::{self, instrument};
 use iroh::SecretKey;
-use std::{env, fs, io, path};
 
 pub mod cli;
 
