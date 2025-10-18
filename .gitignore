@@ -1,11 +1,9 @@
-# Rust stuff.
-debug/
-target/
-dist/
-tarpaulin-report.html
 **/*.rs.bk
 *.pdb
-
-# Nix stuff.
-result
+*.sensitive
 .direnv/
+debug/
+dist/
+result
+target/
+tarpaulin-report.html
