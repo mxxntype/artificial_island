@@ -1,0 +1,11 @@
+[package]
+name = "mpd_android_playlist_bridge"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+epicentre_diagnostics.workspace = true
+serde = { workspace = true, features = ["derive"] }
+
+[lints]
+workspace = true

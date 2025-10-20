@@ -4,7 +4,7 @@ cargo-features = ["codegen-backend"]
 resolver = "2"
 package.edition = "2024"
 members = [
-    "crates/epicentre_diagnostics",
+    "crates/epicentre_diagnostics", "crates/mpd_android_playlist_bridge",
     "crates/neurotransmitter",
     "crates/rb5009_listener",
 ]
