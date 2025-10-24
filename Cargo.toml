@@ -6,7 +6,7 @@ package.edition = "2024"
 members = [
     "crates/epicentre_diagnostics", "crates/mpd_android_playlist_bridge",
     "crates/neurotransmitter",
-    "crates/rb5009_listener",
+    "crates/rb5009_listener", "crates/sulphur",
 ]
 
 [profile.dev]
@@ -49,6 +49,11 @@ base64 = "0.22.1"
 serde = "1.0.226"
 serde_json = "1.0.145"
 eui48 = "1.1.0"
+sysinfo = "0.37.2"
+itertools = "0.14.0"
+ringbuffer = "0.16.0"
+reqwest = "0.12.24"
+tokio-util = "0.7.16"
 
 [workspace.dependencies.tokio]
 version = "1.44.2"
