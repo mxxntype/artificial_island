@@ -5,6 +5,7 @@ use std::time::{Duration, Instant};
 use axum::extract::State;
 use axum::{Json, Router, routing};
 use clap::Parser;
+use epicentre_diagnostics::color_eyre::eyre::Context;
 use epicentre_diagnostics::{DiagnosticLayer, Report, tracing};
 use sulphur::{Metrics, ResourceMonitor, ServerOptions};
 use tokio::sync::Mutex as AsyncMutex;
@@ -32,17 +33,17 @@ async fn main() -> Result<(), Report> {
             Arc::clone(&resource_monitor),
             stop_signal.child_token(),
             measurement_interval
-        ) => {}
+        ) => { /* never fails & returns nothing */ }
 
-        _ = axum_thread(
+        axum_result = axum_thread(
             resource_monitor,
             stop_signal.child_token(),
-            options.listen_addr
-        ) => {}
+            options.socket_addr
+        ) => axum_result.wrap_err("The axum thread returned an error")?,
 
-        signal = tokio::signal::ctrl_c() => match signal {
-            Ok(()) => tracing::warn!("Received SIGINT, stopping the server"),
-            Err(error) => tracing::error!(?error, "Failed to await SIGINT"),
+        signal = tokio::signal::ctrl_c() => {
+            signal?;
+            tracing::warn!("Received SIGINT, stopping the server");
         }
     }
 
@@ -62,7 +63,7 @@ async fn update_thread(
             tokio::time::sleep(measurement_interval).await;
             let pre_refresh = Instant::now();
             resource_monitor.lock().await.refresh();
-            tracing::debug!(refresh_duration = ?Instant::now().duration_since(pre_refresh));
+            tracing::trace!(refresh_duration = ?Instant::now().duration_since(pre_refresh));
         }
     };
 
@@ -85,7 +86,7 @@ async fn axum_thread(
             .with_state(state);
         let listener = tokio::net::TcpListener::bind(&socket_addr)
             .await
-            .inspect(|_| tracing::debug!(?socket_addr, "Bound to socket"))?;
+            .inspect(|_| tracing::info!(?socket_addr, "Bound to socket"))?;
         axum::serve(listener, router).await
     };
 

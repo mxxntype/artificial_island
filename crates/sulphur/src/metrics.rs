@@ -16,30 +16,32 @@ pub const GRAPH_SIGILS: [[char; 4]; 4] = [
 ];
 
 impl Metrics {
-    #[must_use]
-    pub fn render_cpu_usage_graph(&self) -> String {
-        let mut graph = String::new();
+    pub fn render_cpu_usage_graph(&self) -> Result<String, std::fmt::Error> {
+        let mut graph_buffer = String::new();
 
         let graph_length = self.cpu_usage.len() / 2;
         for sigil_index in 0..graph_length {
             let cpu_usage_percent_0 = self.cpu_usage[sigil_index * 2];
             let cpu_usage_percent_1 = self.cpu_usage[sigil_index * 2 + 1];
 
-            let grade_0 = Self::make_grade(cpu_usage_percent_0);
-            let grade_1 = Self::make_grade(cpu_usage_percent_1);
+            let index_0 = Self::scale_usage_to_symbol_index(cpu_usage_percent_0);
+            let index_1 = Self::scale_usage_to_symbol_index(cpu_usage_percent_1);
 
-            write!(&mut graph, "{}", GRAPH_SIGILS[grade_0][grade_1]).unwrap();
+            write!(&mut graph_buffer, "{}", GRAPH_SIGILS[index_0][index_1])?;
         }
 
-        graph.chars().rev().collect()
+        Ok(graph_buffer.chars().rev().collect())
     }
 
-    fn make_grade(value: f32) -> usize {
+    /// Scale an [`f32`] value in the range [0.0; 100.0] to a [`usize`] that
+    /// represents an index within [`GRAPH_SIGILS`]. The scaling is not linear.
+    #[must_use]
+    pub fn scale_usage_to_symbol_index(value: f32) -> usize {
         match value {
-            0.0..25.0 => 0,
-            25.0..50.0 => 1,
-            50.0..75.0 => 2,
-            75.0.. => 3,
+            ..10.0 => 0,
+            10.0..45.0 => 1,
+            45.0..80.0 => 2,
+            80.0.. => 3,
             _ => unreachable!(),
         }
     }
