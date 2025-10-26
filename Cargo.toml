@@ -3,11 +3,7 @@ cargo-features = ["codegen-backend"]
 [workspace]
 resolver = "2"
 package.edition = "2024"
-members = [
-    "crates/epicentre_diagnostics", "crates/mpd_android_playlist_bridge",
-    "crates/neurotransmitter",
-    "crates/rb5009_listener", "crates/sulphur",
-]
+members = ["crates/*"]
 
 [profile.dev]
 codegen-backend = "cranelift"
@@ -30,30 +26,25 @@ match_bool = { level = "allow", priority = 1 }
 [workspace.dependencies]
 anyhow = "1.0.97"
 axum = { version = "0.8.3", features = ["macros"] }
+base64 = "0.22.1"
 clap = { version = "4.5.36", features = ["derive"] }
 color-eyre = "0.6.3"
-iroh = "0.34.1"
-iroh-base = "0.34.1"
-iroh-blobs = { version = "0.34.1", features = ["rpc"] }
-iroh-docs = { version = "0.34.0", features = ["rpc"] }
-iroh-gossip = "0.34.1"
+epicentre_diagnostics = { version = "0.1.0", path = "crates/epicentre_diagnostics" }
+eui48 = "1.1.0"
+itertools = "0.14.0"
 rand = "0.8.5"
+reqwest = "0.12.24"
+ringbuffer = "0.16.0"
+serde = "1.0.226"
+serde_json = "1.0.145"
+spinoff = "0.8.0"
+sysinfo = "0.37.2"
 thiserror = "2.0"
+tokio-util = "0.7.16"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter"] }
-epicentre_diagnostics = { version = "0.1.0", path = "crates/epicentre_diagnostics" }
-spinoff = "0.8.0"
 ureq = "3.1.2"
-base64 = "0.22.1"
-serde = "1.0.226"
-serde_json = "1.0.145"
-eui48 = "1.1.0"
-sysinfo = "0.37.2"
-itertools = "0.14.0"
-ringbuffer = "0.16.0"
-reqwest = "0.12.24"
-tokio-util = "0.7.16"
 
 [workspace.dependencies.tokio]
 version = "1.44.2"
