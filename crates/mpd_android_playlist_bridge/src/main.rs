@@ -1,7 +1,7 @@
 use epicentre_diagnostics::{DiagnosticLayer, Report};
 use mpd_android_playlist_bridge::{RawSettings, Settings};
 
-pub fn main() -> Result<(), Report> {
+fn main() -> Result<(), Report> {
     DiagnosticLayer.setup()?;
 
     let raw_settings = RawSettings::default();
