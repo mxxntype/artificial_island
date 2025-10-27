@@ -1,6 +1,5 @@
 use std::fmt::Write as _;
 
-use epicentre_diagnostics::color_eyre::owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -9,8 +8,7 @@ pub struct Metrics {
     pub cpu_usage: Vec<f32>,
 }
 
-pub const HISTOGRAM_RANGE: usize = 4;
-pub const HISTOGRAM_SYMBOLS: [[char; HISTOGRAM_RANGE]; HISTOGRAM_RANGE] = [
+pub const GRAPH_SIGILS: [[char; 4]; 4] = [
     ['⣀', '⣄', '⣆', '⣇'],
     ['⣠', '⣤', '⣦', '⣧'],
     ['⣰', '⣴', '⣶', '⣷'],
@@ -18,48 +16,33 @@ pub const HISTOGRAM_SYMBOLS: [[char; HISTOGRAM_RANGE]; HISTOGRAM_RANGE] = [
 ];
 
 impl Metrics {
-    pub fn render_cpu_usage_histogram(&self) -> Result<String, std::fmt::Error> {
-        let mut histogram = String::new();
+    pub fn render_cpu_usage_graph(&self) -> Result<String, std::fmt::Error> {
+        let mut graph_buffer = String::new();
 
-        let histogram_length_chars = self.cpu_usage.len() / 2;
-        for histogram_char_index in (0..histogram_length_chars).rev() {
-            let cpu_usage_percent_0 = self.cpu_usage[histogram_char_index * 2];
-            let cpu_usage_percent_1 = self.cpu_usage[histogram_char_index * 2 + 1];
+        let graph_length = self.cpu_usage.len() / 2;
+        for sigil_index in 0..graph_length {
+            let cpu_usage_percent_0 = self.cpu_usage[sigil_index * 2];
+            let cpu_usage_percent_1 = self.cpu_usage[sigil_index * 2 + 1];
 
-            let histogram_table_index_v = Self::scale_usage_to_symbol_index(cpu_usage_percent_0);
-            let histogram_table_index_h = Self::scale_usage_to_symbol_index(cpu_usage_percent_1);
-            let histogram_combined_grade = histogram_table_index_v + histogram_table_index_h + 2;
+            let index_0 = Self::scale_usage_to_symbol_index(cpu_usage_percent_0);
+            let index_1 = Self::scale_usage_to_symbol_index(cpu_usage_percent_1);
 
-            let histogram_symbol = {
-                let symbol = HISTOGRAM_SYMBOLS[histogram_table_index_v][histogram_table_index_h];
-                match histogram_combined_grade {
-                    ..=4 => symbol.green().to_string(),
-                    5..=6 => symbol.yellow().to_string(),
-                    7..=8 => symbol.red().to_string(),
-                    _ => unreachable!(),
-                }
-            };
-
-            write!(&mut histogram, "{histogram_symbol}")?;
+            write!(&mut graph_buffer, "{}", GRAPH_SIGILS[index_0][index_1])?;
         }
 
-        Ok(histogram)
+        Ok(graph_buffer.chars().rev().collect())
     }
 
     /// Scale an [`f32`] value in the range [0.0; 100.0] to a [`usize`] that
-    /// represents an index in [`HISTOGRAM_SYMBOLS`]. The scaling is not linear.
+    /// represents an index within [`GRAPH_SIGILS`]. The scaling is not linear.
     #[must_use]
-    pub fn scale_usage_to_symbol_index(usage_percent: f32) -> usize {
-        let index = match usage_percent {
+    pub fn scale_usage_to_symbol_index(value: f32) -> usize {
+        match value {
             ..10.0 => 0,
             10.0..45.0 => 1,
             45.0..80.0 => 2,
             80.0.. => 3,
             _ => unreachable!(),
-        };
-
-        debug_assert!((0..HISTOGRAM_RANGE).contains(&index));
-
-        index
+        }
     }
 }

@@ -9,7 +9,7 @@ fn main() -> Result<(), Report> {
 
     let options = ClientOptions::parse();
     let metrics = reqwest::blocking::get(options.metrics_http_uri())?.json::<Metrics>()?;
-    let graph = metrics.render_cpu_usage_histogram()?;
+    let graph = metrics.render_cpu_usage_graph()?;
     println!("{graph}");
 
     Ok(())
