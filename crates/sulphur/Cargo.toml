@@ -14,7 +14,7 @@ path = "src/bin/server.rs"
 [dependencies]
 axum.workspace = true
 clap = { workspace = true, features = ["derive"] }
-derive_more = { workspace = true, features = ["deref", "deref_mut", "add"] }
+derive_more = { workspace = true, features = ["deref", "deref_mut", "add", "sum", "from"] }
 epicentre_diagnostics.workspace = true
 itertools.workspace = true
 reqwest = { workspace = true, features = ["blocking", "json"] }
