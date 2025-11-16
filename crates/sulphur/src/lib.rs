@@ -3,6 +3,7 @@
 mod metrics;
 mod resource_monitor;
 pub mod server;
+pub mod units;
 
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
