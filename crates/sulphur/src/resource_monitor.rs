@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use clap::ValueEnum;
@@ -6,6 +7,8 @@ use itertools::Itertools;
 use ringbuffer::{AllocRingBuffer, RingBuffer};
 use serde::{Deserialize, Serialize};
 use sysinfo::{CpuRefreshKind, Networks, RefreshKind, System};
+use tokio::sync::Mutex as AsyncMutex;
+use tokio_util::sync::CancellationToken;
 
 use crate::units::{CpuUsage, NetUsage, NetUsageRate};
 
@@ -20,10 +23,17 @@ pub enum MeasurementType {
 pub struct ResourceMonitor {
     system: System,
     networks: Networks,
-    last_refresh: Instant,
+
+    update_intervals: UpdateIntervals,
+    last_update: Instant,
 
     cpu_usage: AllocRingBuffer<CpuUsage>,
     net_usage_rate: AllocRingBuffer<NetUsageRate>,
+}
+
+#[derive(Debug)]
+pub struct UpdateIntervals {
+    pub realtime: Duration,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -38,12 +48,12 @@ pub struct Metrics {
 impl ResourceMonitor {
     const REMOVE_NOT_LISTED_INTERFACES: bool = true;
 
-    fn refresh_specifics() -> RefreshKind {
+    fn system_refresh_specifics() -> RefreshKind {
         RefreshKind::nothing().with_cpu(CpuRefreshKind::everything())
     }
 
-    pub fn new(capacity: usize) -> Self {
-        let system = System::new_with_specifics(Self::refresh_specifics());
+    pub fn new(capacity: usize, refresh_intervals: UpdateIntervals) -> Self {
+        let system = System::new_with_specifics(Self::system_refresh_specifics());
         let networks = Networks::new_with_refreshed_list();
 
         let mut cpu_usage = AllocRingBuffer::new(capacity);
@@ -58,33 +68,32 @@ impl ResourceMonitor {
 
         Self {
             system,
-            cpu_usage,
-            last_refresh: Instant::now(),
             networks,
+            update_intervals: refresh_intervals,
+            last_update: Instant::now(),
+            cpu_usage,
             net_usage_rate,
         }
     }
 
-    pub fn refresh(&mut self) {
-        let refreshes = Self::refresh_specifics();
-
-        self.system.refresh_specifics(refreshes);
+    pub fn refresh_realtime(&mut self) {
+        self.system
+            .refresh_specifics(Self::system_refresh_specifics());
         self.cpu_usage
             .enqueue(CpuUsage::from_percentage(self.system.global_cpu_usage()));
 
-        let net_usage_combined = self
+        let combined_net_usage = self
             .networks
             .values()
             .map(|nd| nd.received() + nd.transmitted())
             .map(NetUsage::from_bytes)
             .sum::<NetUsage>();
-        let net_usage_rate_combined =
-            NetUsageRate::from_usage_and_duration(net_usage_combined, self.last_refresh.elapsed());
-        tracing::debug!(?net_usage_rate_combined);
-        self.net_usage_rate.enqueue(net_usage_rate_combined);
+        let combined_net_usage_rate =
+            NetUsageRate::from_usage_and_duration(combined_net_usage, self.last_update.elapsed());
+        self.net_usage_rate.enqueue(combined_net_usage_rate);
         self.networks.refresh(Self::REMOVE_NOT_LISTED_INTERFACES);
 
-        self.last_refresh = Instant::now();
+        self.last_update = Instant::now();
     }
 
     pub fn build_metrics(&self) -> Metrics {
@@ -108,5 +117,24 @@ impl ResourceMonitor {
             cpu_usage,
             net_usage_rate,
         }
+    }
+}
+
+#[tracing::instrument(skip_all)]
+pub async fn realtime_update_thread(
+    resource_monitor: Arc<AsyncMutex<ResourceMonitor>>,
+    cancellation_token: CancellationToken,
+) {
+    let update_interval = resource_monitor.lock().await.update_intervals.realtime;
+    let update_loop = async move {
+        loop {
+            tokio::time::sleep(update_interval).await;
+            resource_monitor.lock().await.refresh_realtime();
+        }
+    };
+
+    tokio::select! {
+        () = update_loop => {}
+        () = cancellation_token.cancelled() => {}
     }
 }

@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use axum::extract::State;
 use axum::{Json, Router, routing};
@@ -11,7 +11,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use tokio_util::sync::CancellationToken;
 
 use crate::graph::GRAPH_DENSITY;
-use crate::resource_monitor::{Metrics, ResourceMonitor};
+use crate::resource_monitor::{Metrics, ResourceMonitor, UpdateIntervals, realtime_update_thread};
 use crate::{CLAP_STYLE, DEFAULT_API_ADDRESS};
 
 #[derive(Parser, Debug)]
@@ -40,20 +40,20 @@ pub struct Options {
 #[tracing::instrument(name = "main")]
 pub async fn run(options: &Options) -> Result<(), eyre::Error> {
     let measurement_capacity = options.graph_length * GRAPH_DENSITY;
-    let measurement_interval =
-        Duration::from_secs_f64(options.span_seconds / f64::from(measurement_capacity));
-    tracing::debug!(measurement_capacity, ?measurement_interval);
+    let update_intervals = UpdateIntervals {
+        realtime: Duration::from_secs_f64(options.span_seconds / f64::from(measurement_capacity)),
+    };
 
-    let resource_monitor = ResourceMonitor::new(measurement_capacity.into());
+    tracing::debug!(measurement_capacity, ?update_intervals);
+
+    let resource_monitor = ResourceMonitor::new(measurement_capacity.into(), update_intervals);
     let resource_monitor = Arc::new(AsyncMutex::new(resource_monitor));
-
     let stop_signal = CancellationToken::new();
 
     tokio::select! {
-        () = update_thread(
+        () = realtime_update_thread(
             Arc::clone(&resource_monitor),
             stop_signal.child_token(),
-            measurement_interval
         ) => { /* never fails & returns nothing */ }
 
         axum_result = axum_thread(
@@ -71,27 +71,6 @@ pub async fn run(options: &Options) -> Result<(), eyre::Error> {
     stop_signal.cancel();
 
     Ok(())
-}
-
-#[tracing::instrument(skip_all)]
-pub async fn update_thread(
-    resource_monitor: Arc<AsyncMutex<ResourceMonitor>>,
-    cancellation_token: CancellationToken,
-    measurement_interval: Duration,
-) {
-    let update_loop = async move {
-        loop {
-            tokio::time::sleep(measurement_interval).await;
-            let pre_refresh = Instant::now();
-            resource_monitor.lock().await.refresh();
-            tracing::trace!(refresh_duration = ?Instant::now().duration_since(pre_refresh));
-        }
-    };
-
-    tokio::select! {
-        () = update_loop => {}
-        () = cancellation_token.cancelled() => {}
-    }
 }
 
 #[tracing::instrument(skip_all)]
