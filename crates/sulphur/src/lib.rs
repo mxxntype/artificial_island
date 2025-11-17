@@ -10,8 +10,6 @@ use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 use clap::builder::Styles;
 use clap::builder::styling::AnsiColor;
-pub use metrics::*;
-pub use resource_monitor::*;
 
 pub const CLAP_STYLE: Styles = Styles::styled()
     .usage(AnsiColor::White.on_default().bold().underline())

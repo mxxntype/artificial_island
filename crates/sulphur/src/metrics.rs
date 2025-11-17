@@ -1,19 +1,7 @@
 use std::fmt::Write as _;
 
-use serde::{Deserialize, Serialize};
-
-use crate::MeasurementType;
 use crate::grading::{CpuUsageGrading, MeasurementGrade, MeasurementGrading, NetUsageRateGrading};
-use crate::units::{CpuUsage, NetUsageRate};
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[must_use]
-pub struct Metrics {
-    #[serde(default)]
-    pub cpu_usage: Vec<CpuUsage>,
-    #[serde(default)]
-    pub net_usage_rate: Vec<NetUsageRate>,
-}
+use crate::resource_monitor::{MeasurementType, Metrics};
 
 pub const GRAPH_SIGILS: [[char; 4]; 4] = [
     ['⣀', '⣄', '⣆', '⣇'],

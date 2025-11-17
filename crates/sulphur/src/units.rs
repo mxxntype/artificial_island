@@ -41,6 +41,13 @@ impl NetUsage {
 }
 
 impl NetUsageRate {
+    pub fn idle() -> Self {
+        Self {
+            net_usage: NetUsage::from_bytes(0),
+            duration: Duration::from_secs(1),
+        }
+    }
+
     pub const fn from_usage_and_duration(usage: NetUsage, duration: Duration) -> Self {
         Self {
             net_usage: usage,

@@ -10,7 +10,8 @@ use epicentre_diagnostics::tracing;
 use tokio::sync::Mutex as AsyncMutex;
 use tokio_util::sync::CancellationToken;
 
-use crate::{CLAP_STYLE, DEFAULT_API_ADDRESS, Metrics, ResourceMonitor};
+use crate::resource_monitor::{Metrics, ResourceMonitor};
+use crate::{CLAP_STYLE, DEFAULT_API_ADDRESS};
 
 #[derive(Parser, Debug)]
 #[must_use]
@@ -27,7 +28,10 @@ pub struct Options {
     #[arg(short('l'), long, default_value_t = 5)]
     pub graph_length: u8,
 
-    // TODO(@mxxntype): Figure out a decent docstring for this.
+    /// For how long, in seconds, to keep each *realtime* measurement in memory.
+    ///
+    /// Essentially defines the "lookback" period of the server, or the length
+    /// of the produced graph in seconds, whatever makes more sense to you.
     #[arg(short('s'), long, default_value_t = 5)]
     pub span_seconds: u8,
 }

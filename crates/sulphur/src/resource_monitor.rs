@@ -4,9 +4,9 @@ use clap::ValueEnum;
 use epicentre_diagnostics::tracing;
 use itertools::Itertools;
 use ringbuffer::{AllocRingBuffer, RingBuffer};
+use serde::{Deserialize, Serialize};
 use sysinfo::{CpuRefreshKind, Networks, RefreshKind, System};
 
-use crate::Metrics;
 use crate::units::{CpuUsage, NetUsage, NetUsageRate};
 
 #[derive(ValueEnum, PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -24,6 +24,15 @@ pub struct ResourceMonitor {
 
     cpu_usage: AllocRingBuffer<CpuUsage>,
     net_usage_rate: AllocRingBuffer<NetUsageRate>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[must_use]
+pub struct Metrics {
+    #[serde(default)]
+    pub cpu_usage: Vec<CpuUsage>,
+    #[serde(default)]
+    pub net_usage_rate: Vec<NetUsageRate>,
 }
 
 impl ResourceMonitor {
@@ -92,12 +101,7 @@ impl ResourceMonitor {
             .iter()
             .copied()
             .rev()
-            .pad_using(self.net_usage_rate.capacity(), |_| {
-                NetUsageRate::from_usage_and_duration(
-                    NetUsage::from_bytes(0),
-                    Duration::from_secs(1),
-                )
-            })
+            .pad_using(self.net_usage_rate.capacity(), |_| NetUsageRate::idle())
             .collect();
 
         Metrics {

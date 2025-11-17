@@ -2,7 +2,8 @@ use std::net::SocketAddr;
 
 use clap::Parser;
 use epicentre_diagnostics::{DiagnosticLayer, Report};
-use sulphur::{CLAP_STYLE, DEFAULT_API_ADDRESS, METRICS_ENDPOINT, MeasurementType, Metrics};
+use sulphur::resource_monitor::{MeasurementType, Metrics};
+use sulphur::{CLAP_STYLE, DEFAULT_API_ADDRESS, METRICS_ENDPOINT};
 
 fn main() -> Result<(), Report> {
     DiagnosticLayer.setup()?;
