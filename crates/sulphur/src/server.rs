@@ -10,6 +10,7 @@ use epicentre_diagnostics::tracing;
 use tokio::sync::Mutex as AsyncMutex;
 use tokio_util::sync::CancellationToken;
 
+use crate::graph::GRAPH_DENSITY;
 use crate::resource_monitor::{Metrics, ResourceMonitor};
 use crate::{CLAP_STYLE, DEFAULT_API_ADDRESS};
 
@@ -32,15 +33,15 @@ pub struct Options {
     ///
     /// Essentially defines the "lookback" period of the server, or the length
     /// of the produced graph in seconds, whatever makes more sense to you.
-    #[arg(short('s'), long, default_value_t = 5)]
-    pub span_seconds: u8,
+    #[arg(short('s'), long, default_value_t = 5.0)]
+    pub span_seconds: f64,
 }
 
 #[tracing::instrument(name = "main")]
 pub async fn run(options: &Options) -> Result<(), eyre::Error> {
-    let measurement_capacity = options.graph_length * 2;
+    let measurement_capacity = options.graph_length * GRAPH_DENSITY;
     let measurement_interval =
-        Duration::from_secs_f64(f64::from(options.span_seconds) / f64::from(measurement_capacity));
+        Duration::from_secs_f64(options.span_seconds / f64::from(measurement_capacity));
     tracing::debug!(measurement_capacity, ?measurement_interval);
 
     let resource_monitor = ResourceMonitor::new(measurement_capacity.into());

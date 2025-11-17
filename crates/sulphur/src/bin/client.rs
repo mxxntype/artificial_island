@@ -10,7 +10,7 @@ fn main() -> Result<(), Report> {
 
     let options = ClientOptions::parse();
     let metrics = reqwest::blocking::get(options.metrics_http_uri())?.json::<Metrics>()?;
-    let graph = metrics.render_usage_graph(options.measurement_type)?;
+    let graph = sulphur::graph::render(&metrics, options.measurement_type)?;
     println!("{graph}");
 
     Ok(())

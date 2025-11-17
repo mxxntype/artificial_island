@@ -1,7 +1,8 @@
-#![allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
+#![deny(clippy::allow_attributes)]
+#![expect(clippy::missing_errors_doc)]
 
 pub mod grading;
-pub mod metrics;
+pub mod graph;
 pub mod resource_monitor;
 pub mod server;
 pub mod units;
