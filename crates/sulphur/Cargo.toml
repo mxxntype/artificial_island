@@ -12,23 +12,25 @@ name = "sulphur_server"
 path = "src/bin/server.rs"
 
 [dependencies]
-axum.workspace = true
+axum = { workspace = true, features = ["macros"] }
 clap = { workspace = true, features = ["derive"] }
-derive_more = { workspace = true, features = ["deref", "deref_mut", "add", "sum", "from"] }
 epicentre_diagnostics.workspace = true
 itertools.workspace = true
 reqwest = { workspace = true, features = ["blocking", "json"] }
 ringbuffer.workspace = true
 serde = { workspace = true, features = ["derive"] }
 sysinfo.workspace = true
-tokio = { workspace = true, features = [
-    "rt-multi-thread",
-    "macros",
-    "signal",
-    "time",
-] }
 tokio-util.workspace = true
 uom = { workspace = true, features = ["autoconvert", "serde", "u64"] }
+
+[dependencies.tokio]
+workspace = true
+features = ["rt-multi-thread", "macros", "signal", "time"]
+
+[dependencies.derive_more]
+workspace = true
+features = ["deref", "deref_mut", "add", "sum", "from"]
+
 
 [lints]
 workspace = true

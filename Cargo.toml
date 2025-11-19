@@ -25,11 +25,11 @@ match_bool = { level = "allow", priority = 1 }
 
 [workspace.dependencies]
 anyhow = "1.0.97"
-axum = { version = "0.8.3", features = ["macros"] }
+axum = "0.8.3"
 base64 = "0.22.1"
-clap = { version = "4.5.36", features = ["derive"] }
+clap = "4.5.36"
 color-eyre = "0.6.3"
-epicentre_diagnostics = { version = "0.1.0", path = "crates/epicentre_diagnostics" }
+epicentre_diagnostics = { path = "crates/epicentre_diagnostics" }
 eui48 = "1.1.0"
 itertools = "0.14.0"
 rand = "0.8.5"
@@ -43,7 +43,7 @@ thiserror = "2.0"
 tokio-util = "0.7.16"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
-tracing-subscriber = { version = "0.3.19", features = ["fmt", "env-filter"] }
+tracing-subscriber = "0.3.19"
 ureq = "3.1.2"
 uom = "0.37.0"
 derive_more = "2.0.1"
